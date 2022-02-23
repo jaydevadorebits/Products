@@ -1,0 +1,24 @@
+import 'package:flutter/material.dart';
+
+class ProfileScreen extends StatefulWidget
+{
+  @override
+  State<StatefulWidget> createState() {
+    return ProfileState();
+  }
+
+}
+
+class ProfileState extends State<ProfileScreen>
+{
+  @override
+  Widget build(BuildContext context)
+  {
+    return Scaffold(
+      body: Center(
+        child: Text('profile'),
+      ),
+    );
+  }
+
+}

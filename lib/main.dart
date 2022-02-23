@@ -1,0 +1,42 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:products/providers/add_update_provider.dart';
+import 'package:products/providers/products_provider.dart';
+import 'package:products/screens/splash_screen.dart';
+import 'package:provider/provider.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider<AddProductProvider>.value(
+          value: AddProductProvider()),
+      ChangeNotifierProvider<ProductsProvider>.value(value: ProductsProvider()),
+    ],
+    child: MyApp(),
+  ));
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  //late User user;
+
+  @override
+  Widget build(BuildContext context) {
+    return ScreenUtilInit(
+      designSize: Size(375, 812),
+      builder: () => MaterialApp(
+        title: 'Products',
+        home: SplashScreen(),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
+  }
+}
