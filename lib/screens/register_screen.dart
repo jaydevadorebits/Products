@@ -12,6 +12,7 @@ import 'package:products/utils/common_widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import '../helper/authentication_helper.dart';
+import '../helper/color_extenstion.dart';
 import '../helper/helper_class.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class RegisterState extends State<RegisterScreen> {
   final List<String> _dropdownValues = ["Select Category", "Male", "Female"]; //
   String? selecteditem;
   bool isEnable = false;
+  var Dateofbirth;
   final TextEditingController _controllerFirstName = TextEditingController();
   final TextEditingController _controllerLastName = TextEditingController();
   final TextEditingController _controllerMobile = TextEditingController();
@@ -74,7 +76,8 @@ class RegisterState extends State<RegisterScreen> {
                 _controllerMobile, mobile, 1, 10, TextInputType.phone),
             widgetTextField(
                 _controllerEmail, email, 1, TextInputType.emailAddress),
-            widgetTextField(_controllerDob, dob, 1, TextInputType.text),
+            widgetDateOfBirth(),
+            //widgetTextField(_controllerDob, dob, 1, TextInputType.text),
             widgetGenderField(),
             widgetTextField(_controllerPassword, password, 1,
                 TextInputType.visiblePassword),
@@ -134,6 +137,49 @@ class RegisterState extends State<RegisterScreen> {
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  widgetDateOfBirth() {
+    return GestureDetector(
+      onTap: () async {
+        Dateofbirth = await showDatePicker(
+          context: context,
+          firstDate: DateTime(1960),
+          initialDate: DateTime.now(),
+          lastDate: DateTime.now(),
+        );
+
+        if (Dateofbirth != null) {
+          final DateFormat formatter = DateFormat('dd-MM-yyyy');
+
+          final String formatingdate = formatter.format(Dateofbirth);
+          _controllerDob.text = formatingdate;
+          print(Dateofbirth);
+        }
+      },
+      child: Container(
+        margin:
+            EdgeInsets.only(left: 22.h, right: 22.h, top: 10.h, bottom: 5.h),
+        decoration: new BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: new BorderRadius.circular(12.h),
+            border: Border.all(color: Colors.green)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 13.h),
+          child: TextField(
+            controller: _controllerDob,
+            enabled: false,
+            decoration: InputDecoration(
+              hintText: "Select Date of Birth",
+              hintStyle: text_style_regular(20.sp, HexColor('#40333333')),
+              border: InputBorder.none,
+            ),
+            maxLines: 1,
+            style: text_style_regular(20.sp, color_regular),
+          ),
         ),
       ),
     );
@@ -241,7 +287,7 @@ class RegisterState extends State<RegisterScreen> {
             selecteditem = value;
             print('selected item->' + value.toString());
           },
-          isExpanded: false,
+          isExpanded: true,
           value: selecteditem,
         ),
       ),

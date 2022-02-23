@@ -96,12 +96,12 @@ class ProductsState extends State<ProductsScreen> {
                 if (item == 1)
                   {
                     Provider.of<ProductsProvider>(context, listen: false)
-                        .FilterByCategory("Phone",widget.user.uid)
+                        .FilterByCategory("Phone", widget.user.uid)
                   }
                 else if (item == 2)
                   {
                     Provider.of<ProductsProvider>(context, listen: false)
-                        .FilterByCategory("System",widget.user.uid)
+                        .FilterByCategory("System", widget.user.uid)
                     // Provider.of<ProductsProvider>(context, listen: false).FilterByCategory("System")
                   }
                 else if (item == 3)
@@ -181,26 +181,6 @@ class ProductsState extends State<ProductsScreen> {
             ),
           ],
         ),
-        /*appBar: AppBar(
-          backgroundColor: Colors.green,
-          automaticallyImplyLeading: false,
-          title: Text(
-            products,
-          ),
-          actions: <Widget>[
-            IconButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AddUpdateProductScreen(
-                              userId: widget.user.uid,
-                            )));
-              },
-              icon: Icon(Icons.add),
-            ),
-          ],
-        ),*/
         body: Consumer<ProductsProvider>(
           builder: (context, productsProvider, child) {
             return productsProvider.loading
@@ -230,8 +210,45 @@ class ProductsState extends State<ProductsScreen> {
   Widget _widget_staggered_grid(
       Products documentSnapshot, context, ProductsProvider noteListProvider) {
     return Card(
-      margin: EdgeInsets.all(10),
-      child: InkWell(
+        margin: EdgeInsets.all(10),
+        child: Padding(
+          padding:
+              EdgeInsets.only(left: 10.w, top: 10.h, bottom: 10.h, right: 10.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                documentSnapshot.name.toString(),
+                style: TextStyle(fontSize: 18),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 5.h),
+                child: Text(
+                  documentSnapshot.description.toString(),
+                  style: TextStyle(fontSize: 15),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 5.h),
+                child: Text(
+                  documentSnapshot.category.toString(),
+                  style: TextStyle(fontSize: 15),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 5.h, bottom: 5.h),
+                child: Text(
+                  'Rs ' + documentSnapshot.price.toString(),
+                  style: TextStyle(fontSize: 15),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+
+  /*
+  InkWell(
         onTap: () {},
         onLongPress: () {},
         child: ListTile(
@@ -246,8 +263,7 @@ class ProductsState extends State<ProductsScreen> {
           ),
         ),
       ),
-    );
-  }
+   */
 
   List<Widget> buildGrid(List<DocumentSnapshot> documents) {
     List<Widget> _gridItems = [];

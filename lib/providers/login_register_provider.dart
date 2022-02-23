@@ -85,10 +85,7 @@ class AuthenticationProvider with ChangeNotifier {
   }
 
   Future<UserModel> getUserDetails(String userId) async {
-    print('get_user_details');
     var snapshot = await collection.doc(userId).get();
-    //print('value ' + snapshot['firstName']);
-
     late UserModel userModel = UserModel();
 
     userModel.firstName = snapshot['firstName'];
@@ -97,18 +94,50 @@ class AuthenticationProvider with ChangeNotifier {
     userModel.email = snapshot['email'];
     userModel.gender = snapshot['gender'];
     userModel.dob = snapshot['dob'];
-    /*var documents = val.docs;
 
-    if (documents.length > 0) {
-      for (var snapshot in documents) {
-        userModel.firstName = snapshot['firstName'];
-        userModel.lastName = snapshot['lastName'];
-        userModel.mobile = snapshot['mobile'];
-        userModel.email = snapshot['email'];
-        userModel.gender = snapshot['gender'];
-        userModel.dob = snapshot['dob'];
-      }
-    }*/
     return userModel;
+  }
+
+  Future<UserModel?> updateUser(
+      String userId,
+      String firstName,
+      String lastName,
+      String mobile,
+      String email,
+      String gender,
+      String dob) async {
+    print('add_user_repository1->');
+    var uuid = Uuid();
+    var uuId = uuid.v1();
+    final userObj = {
+      "id": userId,
+      "firstName": firstName,
+      "lastName": lastName,
+      "mobile": mobile,
+      "email": email,
+      "gender": gender,
+      "dob": dob,
+    };
+    final res = await update_user(userObj, userId);
+    if (res != null) {
+      print('user_updated');
+      UserModel userModel = UserModel();
+      userModel.userId = uuId;
+      userModel.firstName = firstName;
+      userModel.lastName = lastName;
+      userModel.mobile = mobile;
+      userModel.email = email;
+      userModel.gender = gender;
+      userModel.dob = dob;
+      return userModel;
+    }
+    return null;
+  }
+
+  Future<String> update_user(Map<String, String> todoObj, String userId) async {
+    var noteId = userId; //_auth.currentUser!.uid;
+    print('add_user->' + noteId);
+    await collection.doc(noteId).update(todoObj);
+    return noteId;
   }
 }

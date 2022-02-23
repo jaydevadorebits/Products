@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:products/providers/add_update_provider.dart';
+
 import 'package:products/providers/products_provider.dart';
 import 'package:products/utils/common_widgets.dart';
 import 'package:provider/provider.dart';
