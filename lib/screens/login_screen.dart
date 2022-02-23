@@ -1,11 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:products/helper/authentication_helper.dart';
 import 'package:products/helper/common_strings.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:products/screens/home_screen.dart';
 import 'package:products/screens/register_screen.dart';
+import 'package:provider/provider.dart';
 import '../helper/helper_class.dart';
+import '../providers/login_register_provider.dart';
 import '../utils/common_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -22,17 +26,26 @@ class LoginState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: Text(login),
-        automaticallyImplyLeading: false,
-      ),
-      body: _widgetBody(),
-      //floatingActionButton: _widgetFloatingButton(),
-    );
+        appBar: AppBar(
+          backgroundColor: Colors.green,
+          title: Text(login),
+          automaticallyImplyLeading: false,
+        ),
+        body: Consumer<AuthenticationProvider>(
+            builder: (context, authProvider, child) {
+          return authProvider.loading
+              ? Center(
+                  child: CircularProgressIndicator(
+                  valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+                ))
+              : _widgetBody(authProvider);
+        }
+            //_widgetBody(),
+            //floatingActionButton: _widgetFloatingButton(),
+            ));
   }
 
-  Widget _widgetBody() {
+  Widget _widgetBody(AuthenticationProvider authenticationProvider) {
     return SingleChildScrollView(
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -49,8 +62,9 @@ class LoginState extends State<LoginScreen> {
               height: 10.h,
             ),
             widgetButton(login, () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()));
+              loginUser(_controllerEmail.text, _controllerPassword.text,
+                  authenticationProvider);
+              //Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
             }),
             Container(
               margin: EdgeInsets.only(
@@ -92,11 +106,49 @@ class LoginState extends State<LoginScreen> {
           else if (_controllerPassword.text.isEmpty)
             Helper.show_msg('Please set password');
           else {
-            DateFormat dateFormat =
-                DateFormat("dd-MM-yyyy"); //yyyy-MM-dd HH:mm:ss
-            var date_time = dateFormat.format(DateTime.now());
-            print('date time ' + dateFormat.format(DateTime.now()));
+            //loginUser(_controllerEmail.text, _controllerPassword.text,);
           }
         });
+  }
+
+  void loginUser(String email, String password,
+      AuthenticationProvider authenticationProvider) {
+    authenticationProvider.loading = true;
+    authenticationProvider
+        .signIn(email: email, password: password)
+        .then((result) {
+      if (result == null) {
+        User user = AuthenticationHelper().user;
+        /*Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomeScreen(
+                      user: user,
+                    )));*/
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => HomeScreen(user: user)),
+            (route) => false);
+      } else {
+        authenticationProvider.loading = false;
+        Helper.show_msg(result);
+      }
+    });
+
+    /*AuthenticationHelper()
+        .signIn(email: email, password: password)
+        .then((result) {
+      if (result == null) {
+        User user = AuthenticationHelper().user;
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomeScreen(
+                      user: user,
+                    )));
+      } else {
+        Helper.show_msg(result);
+      }
+    });*/
   }
 }

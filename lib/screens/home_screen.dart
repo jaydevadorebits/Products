@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:products/helper/common_strings.dart';
 import 'package:products/screens/product_list_screen.dart';
@@ -5,6 +6,10 @@ import 'package:products/screens/user_profile_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeScreen extends StatefulWidget {
+  User user;
+
+  HomeScreen({required this.user});
+
   @override
   State<StatefulWidget> createState() {
     return HomeState();
@@ -12,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeState extends State<HomeScreen> {
-  List<Widget> tabPages = [ProductsScreen(), ProfileScreen()];
+  //List<Widget> tabPages = [ProductsScreen(), ProfileScreen()];
   int selectedIndex = 0;
 
   @override
@@ -27,8 +32,10 @@ class HomeState extends State<HomeScreen> {
     return IndexedStack(
       index: selectedIndex,
       children: <Widget>[
-        ProductsScreen(),
-        ProfileScreen(),
+        ProductsScreen(
+          user: widget.user,
+        ),
+        ProfileScreen(userId: widget.user.uid),
       ],
     );
   }
@@ -46,11 +53,7 @@ class HomeState extends State<HomeScreen> {
       // currentIndex: selectedIndex,
       // onTap: onTabTapped,
       items: [
-        BottomNavigationBarItem(
-
-            label: products, icon: const Icon(Icons.list)
-
-        ),
+        BottomNavigationBarItem(label: products, icon: const Icon(Icons.list)),
         BottomNavigationBarItem(icon: const Icon(Icons.person), label: profile),
       ],
     );

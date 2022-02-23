@@ -2,7 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:products/providers/add_update_provider.dart';
+import 'package:products/providers/login_register_provider.dart';
 import 'package:products/providers/products_provider.dart';
+
 import 'package:products/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +17,9 @@ void main() async {
       ChangeNotifierProvider<AddProductProvider>.value(
           value: AddProductProvider()),
       ChangeNotifierProvider<ProductsProvider>.value(value: ProductsProvider()),
+      ChangeNotifierProvider<AuthenticationProvider>.value(
+          value: AuthenticationProvider()),
+
     ],
     child: MyApp(),
   ));

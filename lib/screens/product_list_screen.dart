@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:products/helper/common_strings.dart';
@@ -11,6 +12,10 @@ import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ProductsScreen extends StatefulWidget {
+  User user;
+
+  ProductsScreen({required this.user});
+
   @override
   State<StatefulWidget> createState() {
     return ProductsState();
@@ -35,7 +40,8 @@ class ProductsState extends State<ProductsScreen> {
 
   onInitializeProvider() async {
     if (!isMethodCalled) {
-      Provider.of<ProductsProvider>(context, listen: false).fetchAllProducts();
+      Provider.of<ProductsProvider>(context, listen: false)
+          .fetchAllProducts(widget.user.uid);
       isMethodCalled = !isMethodCalled;
     }
   }
@@ -50,17 +56,151 @@ class ProductsState extends State<ProductsScreen> {
             products,
           ),
           actions: <Widget>[
+            PopupMenuButton(
+              icon: Icon(Icons.filter_alt_outlined),
+              itemBuilder: (context) => [
+                PopupMenuItem<int>(
+                  value: 0,
+                  child: Text(
+                    "Select Category",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                PopupMenuItem<int>(
+                  value: 1,
+                  child: Column(
+                    children: [
+                      Text(
+                        "Phone",
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem<int>(
+                  value: 2,
+                  child: Text(
+                    "System",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                PopupMenuItem<int>(
+                  value: 3,
+                  child: Text(
+                    "Clear All",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+              onSelected: (item) => {
+                if (item == 1)
+                  {
+                    Provider.of<ProductsProvider>(context, listen: false)
+                        .FilterByCategory("Phone",widget.user.uid)
+                  }
+                else if (item == 2)
+                  {
+                    Provider.of<ProductsProvider>(context, listen: false)
+                        .FilterByCategory("System",widget.user.uid)
+                    // Provider.of<ProductsProvider>(context, listen: false).FilterByCategory("System")
+                  }
+                else if (item == 3)
+                  {
+                    Provider.of<ProductsProvider>(context, listen: false)
+                        .fetchAllProducts(widget.user.uid)
+                  }
+              },
+            ),
+            PopupMenuButton(
+              icon: Icon(Icons.sort),
+              itemBuilder: (context) => [
+                PopupMenuItem<int>(
+                  value: 0,
+                  child: Text(
+                    "Select Sorting",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                PopupMenuItem<int>(
+                  value: 1,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          "Price High to Low",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                PopupMenuItem<int>(
+                  value: 2,
+                  child: Text(
+                    "Price Low to High",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                PopupMenuItem<int>(
+                  value: 3,
+                  child: Text(
+                    "Clear All",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
+              onSelected: (item) => {
+                if (item == 1)
+                  {
+                    Provider.of<ProductsProvider>(context, listen: false)
+                        .sortbyHightoLowPrice()
+                  }
+                else if (item == 2)
+                  {
+                    Provider.of<ProductsProvider>(context, listen: false)
+                        .sortbyLowtoHighPrice()
+                  }
+                else if (item == 3)
+                  {
+                    Provider.of<ProductsProvider>(context, listen: false)
+                        .fetchAllProducts(widget.user.uid)
+                  }
+              },
+            ),
             IconButton(
               onPressed: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => AddUpdateProductScreen()));
+                        builder: (context) => AddUpdateProductScreen(
+                              userId: widget.user.uid,
+                            )));
               },
               icon: Icon(Icons.add),
             ),
           ],
         ),
+        /*appBar: AppBar(
+          backgroundColor: Colors.green,
+          automaticallyImplyLeading: false,
+          title: Text(
+            products,
+          ),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AddUpdateProductScreen(
+                              userId: widget.user.uid,
+                            )));
+              },
+              icon: Icon(Icons.add),
+            ),
+          ],
+        ),*/
         body: Consumer<ProductsProvider>(
           builder: (context, productsProvider, child) {
             return productsProvider.loading

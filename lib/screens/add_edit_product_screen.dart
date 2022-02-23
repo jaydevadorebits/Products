@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:products/providers/add_update_provider.dart';
+import 'package:products/providers/products_provider.dart';
 import 'package:products/utils/common_widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -8,6 +10,10 @@ import '../helper/common_strings.dart';
 import '../helper/helper_class.dart';
 
 class AddUpdateProductScreen extends StatefulWidget {
+  String userId;
+
+  AddUpdateProductScreen({required this.userId});
+
   @override
   State<StatefulWidget> createState() {
     return AddUpdateProductState();
@@ -21,13 +27,19 @@ class AddUpdateProductState extends State<AddUpdateProductScreen> {
   final TextEditingController _controllerPrice = TextEditingController();
 
   @override
+  void initState() {
+    print('init userId->' + widget.userId);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.green,
           title: Text(add_product),
         ),
-        body: Consumer<AddProductProvider>(
+        body: Consumer<ProductsProvider>(
             builder: (context, addProductProvider, child) {
           return addProductProvider.loading
               ? Center(
@@ -39,7 +51,7 @@ class AddUpdateProductState extends State<AddUpdateProductScreen> {
             ));
   }
 
-  Widget _widgetBody(AddProductProvider addProductProvider) {
+  Widget _widgetBody(ProductsProvider addProductProvider) {
     return SingleChildScrollView(
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -68,11 +80,13 @@ class AddUpdateProductState extends State<AddUpdateProductScreen> {
                 addProductProvider.loading = true;
                 addProductProvider
                     .addProducts(
+                        widget.userId,
                         _controllerName.text,
                         _controllerDescription.text,
                         _controllerCategory.text,
                         _controllerPrice.text)
                     .then((value) {
+                  addProductProvider.fetchAllProducts(widget.userId);
                   addProductProvider.loading = false;
                   Navigator.pop(context, value);
                 });

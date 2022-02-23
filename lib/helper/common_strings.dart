@@ -16,6 +16,7 @@ String email = 'Email';
 String password = 'Password';
 String profile = 'Profile';
 String products = 'Products';
+String dob='Date of birth';
 
 String name = 'Name';
 String category = 'Category';

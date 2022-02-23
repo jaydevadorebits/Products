@@ -6,7 +6,6 @@ import 'package:products/model/products.dart';
 import 'package:uuid/uuid.dart';
 
 class AddProductProvider with ChangeNotifier {
-  var userId = 'f48fa410-9458-11ec-8979-e3723dc483b0';
   var collection = FirebaseFirestore.instance.collection('Products');
 
   bool _loading = false;
@@ -15,14 +14,61 @@ class AddProductProvider with ChangeNotifier {
 
   bool isEnable = false;
 
+  List<Products>? products = [];
+
+  List<Products>? get getProductList {
+    return products;
+  }
+
   set loading(bool loadingState) {
     _loading = loadingState;
     print('loading ' + _loading.toString());
     notifyListeners();
   }
 
-  Future<Products?> addProducts(
-      String name, String description, String category, String price) async {
+  void fetchAllProducts(String userId) {
+    loading = true;
+    Timer(Duration(seconds: 2), () async {
+      getAllProducts(userId).then((value) {
+        products!.clear();
+        products!.addAll(value);
+        loading = false;
+        notifyListeners();
+      });
+    });
+  }
+
+  Future<List<Products>> getAllProducts(userId) async {
+    print('get products');
+
+    //var val = await FirebaseFirestore.instance.collection('Products').get();
+    var val = await FirebaseFirestore.instance
+        .collection('Products')
+        .doc('Users')
+        .collection(userId)
+        .get();
+
+    var documents = val.docs;
+    if (documents.length > 0) {
+      try {
+        print("Active ${documents.length}");
+        return documents.map((document) {
+          print('document->' + document.id);
+          Products product = Products.fromJson(
+            Map<String, dynamic>.from(document.data()),
+          );
+          return product;
+        }).toList();
+      } catch (e) {
+        print("Exception $e");
+        return [];
+      }
+    }
+    return [];
+  }
+
+  Future<Products?> addProducts(String userId, String name, String description,
+      String category, String price) async {
     print('add_products_repository1->');
     var uuid = Uuid();
     var productId = uuid.v1();
@@ -33,7 +79,7 @@ class AddProductProvider with ChangeNotifier {
       "category": category,
       "price": price
     };
-    final res = await add_product(productObj, productId);
+    final res = await add_product(productObj, productId, userId);
     if (res != null) {
       print('products added');
       Products products = Products();
@@ -46,9 +92,13 @@ class AddProductProvider with ChangeNotifier {
     return null;
   }
 
-  Future<String> add_product(Map<String, String> todoObj, String key) async {
+  Future<String> add_product(
+      Map<String, String> todoObj, String key, String userId) async {
     var noteId = key;
     await collection.doc('Users').collection(userId).doc(noteId).set(todoObj);
     return noteId;
   }
+
+
+
 }

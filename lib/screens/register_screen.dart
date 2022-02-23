@@ -1,9 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:products/helper/authentication_helper.dart';
+import 'package:products/helper/authentication_helper.dart';
+import 'package:products/helper/authentication_helper.dart';
 import 'package:products/helper/common_strings.dart';
+import 'package:products/providers/login_register_provider.dart';
+import 'package:products/screens/home_screen.dart';
 import 'package:products/screens/login_screen.dart';
 import 'package:products/utils/common_widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+import '../helper/authentication_helper.dart';
 import '../helper/helper_class.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -14,6 +22,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class RegisterState extends State<RegisterScreen> {
+  final List<String> _dropdownValues = ["Select Category", "Male", "Female"]; //
+  String? selecteditem;
   bool isEnable = false;
   final TextEditingController _controllerFirstName = TextEditingController();
   final TextEditingController _controllerLastName = TextEditingController();
@@ -23,18 +33,33 @@ class RegisterState extends State<RegisterScreen> {
   final TextEditingController _controllerPassword = TextEditingController();
 
   @override
+  void initState() {
+    selecteditem = _dropdownValues[0];
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: new AppBar(
         backgroundColor: Colors.green,
         title: Text(register),
       ),
-      body: _widgetBody(),
-     // floatingActionButton: _widgetFloatingButton(),
+      body: Consumer<AuthenticationProvider>(
+          builder: (context, authProvider, child) {
+        return authProvider.loading
+            ? Center(
+                child: CircularProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+              ))
+            : _widgetBody(authProvider);
+      }),
+
+      // floatingActionButton: _widgetFloatingButton(),
     );
   }
 
-  Widget _widgetBody() {
+  Widget _widgetBody(AuthenticationProvider authenticationProvider) {
     return SingleChildScrollView(
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -49,13 +74,38 @@ class RegisterState extends State<RegisterScreen> {
                 _controllerMobile, mobile, 1, 10, TextInputType.phone),
             widgetTextField(
                 _controllerEmail, email, 1, TextInputType.emailAddress),
+            widgetTextField(_controllerDob, dob, 1, TextInputType.text),
+            widgetGenderField(),
             widgetTextField(_controllerPassword, password, 1,
                 TextInputType.visiblePassword),
             SizedBox(
               height: 10.h,
             ),
             widgetButton(register, () {
-              print('register');
+              if (_controllerFirstName.text.isEmpty)
+                Helper.show_msg('Please add first name');
+              else if (_controllerLastName.text.isEmpty)
+                Helper.show_msg('Please add last name');
+              else if (_controllerMobile.text.isEmpty)
+                Helper.show_msg('Please add email');
+              else if (selecteditem == 'Select Category')
+                Helper.show_msg('Please select gender');
+              else if (_controllerDob.text.isEmpty)
+                Helper.show_msg('Please add date of birth');
+              else if (_controllerPassword.text.isEmpty)
+                Helper.show_msg('Please add password');
+              else {
+                print('done validation');
+                registerUser(
+                    _controllerFirstName.text,
+                    _controllerLastName.text,
+                    _controllerMobile.text,
+                    _controllerEmail.text,
+                    _controllerPassword.text,
+                    selecteditem.toString(),
+                    _controllerDob.text,
+                    authenticationProvider);
+              }
             }),
             Container(
               margin: EdgeInsets.only(
@@ -89,6 +139,52 @@ class RegisterState extends State<RegisterScreen> {
     );
   }
 
+  void registerUser(
+      String firstName,
+      String lastName,
+      String mobile,
+      String email,
+      String password,
+      String gender,
+      String dob,
+      AuthenticationProvider authProvider) {
+    authProvider.loading = true;
+    authProvider.signUp(email: email, password: password).then((result) {
+      if (result == null) {
+        User user = AuthenticationHelper().user;
+        authProvider
+            .addUser(user.uid, firstName, lastName, mobile, email, gender, dob)
+            .then((value) {
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen(user: user)),
+              (route) => false);
+          authProvider.loading = false;
+        });
+      } else {
+        authProvider.loading = false;
+        Helper.show_msg(result);
+      }
+    });
+
+    /*authProvider.AuthenticationHelper()
+        .signUp(email: email, password: password)
+        .then((result) {
+      if (result == null) {
+        User user = AuthenticationHelper().user;
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomeScreen(
+                      user: user,
+                    )));
+
+      } else {
+        Helper.show_msg(result);
+      }
+    });*/
+  }
+
   Widget _widgetFloatingButton() {
     return FloatingActionButton(
         elevation: 0.0,
@@ -113,5 +209,42 @@ class RegisterState extends State<RegisterScreen> {
                 MaterialPageRoute(builder: (context) => LoginScreen()));
           }
         });
+  }
+
+  widgetGenderField() {
+    return Container(
+      height: 60.h,
+      width: MediaQuery.of(context).size.width,
+      margin: EdgeInsets.only(left: 22.h, right: 22.h, top: 10.h, bottom: 5.h),
+      decoration: new BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: new BorderRadius.circular(12.h),
+          border: Border.all(color: Colors.green)),
+      child: Container(
+        margin: EdgeInsets.only(
+          left: 10.w,
+          right: 20.w,
+        ),
+        child: DropdownButton(
+          underline: Container(),
+          items: _dropdownValues
+              .map((value) => DropdownMenuItem(
+                    child: Text(
+                      value,
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    value: value,
+                  ))
+              .toList(),
+          onChanged: (String? value) {
+            setState(() {});
+            selecteditem = value;
+            print('selected item->' + value.toString());
+          },
+          isExpanded: false,
+          value: selecteditem,
+        ),
+      ),
+    );
   }
 }
